@@ -96,6 +96,9 @@ h1 span { font-weight: 500; color: var(--muted); }
 .bests { display: grid; gap: 6px; }
 .bests div { display: flex; justify-content: space-between; gap: 10px; align-items: center; }
 .bests b { font: 600 15px var(--f-mono); font-variant-numeric: tabular-nums; }
+.bests button { display: flex; justify-content: space-between; gap: 10px; align-items: center; width: 100%; margin: 0 -8px; padding: 5px 8px; box-sizing: content-box; border: 0; border-radius: 8px; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.bests button:hover { background: var(--paper); }
+.bests button[aria-pressed="true"] { background: var(--accent-soft); box-shadow: inset 0 0 0 1.5px var(--accent); }
 
 .eyebrow { margin: 0; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
 .help { margin: 0; font-size: 14px; color: var(--muted); max-width: 65ch; }
@@ -539,7 +542,7 @@ const poolName = p => p === 'all' ? 'All apps' : APPS[p].name;
 const poolSize = p => p === 'all' ? BANK.length : BY_SRC[p].length;
 const HARD_FROM = 10;  // Hard questions join the run after this many right answers
 const bests = store.get('ctd.beast') || {};
-const bx = { pool: store.get('ctd.beast.pool') || 'all', phase: 'start', used: new Set(), score: 0, cur: null, newBest: false };
+const bx = { pool: store.get('ctd.beast.pool') || 'all', phase: 'start', used: new Set(), score: 0, cur: null, newBest: false, stopped: null };
 if (!POOLS.includes(bx.pool)) bx.pool = 'all';
 function beastNext() {
   const srcs = bx.pool === 'all' ? SRC : [bx.pool];
@@ -553,7 +556,17 @@ function beastNext() {
   bx.phase = 'play';
   renderBeast();
 }
-function beastStart() { bx.used = new Set(); bx.score = 0; bx.newBest = false; beastNext(); scrollMain(); }
+function beastStart() { bx.used = new Set(); bx.score = 0; bx.newBest = false; bx.stopped = null; beastNext(); scrollMain(); }
+function keepBest() {
+  if (bx.score > (bests[bx.pool] || 0)) { bests[bx.pool] = bx.score; bx.newBest = true; store.set('ctd.beast', bests); }
+}
+// leaving a run part-way ends it there; the streak so far still counts
+function beastChoose(p) {
+  if (bx.phase === 'play') { keepBest(); bx.stopped = bx.score ? { pool: bx.pool, score: bx.score, best: bx.newBest } : null; }
+  else if (bx.phase !== 'start') bx.stopped = null;
+  bx.pool = p; store.set('ctd.beast.pool', p); bx.phase = 'start';
+  renderBeast(); renderBeastSide();
+}
 function beastAnswer(j) {
   const c = bx.cur;
   if (bx.phase !== 'play' || !c || c.chosen !== null) return;
@@ -561,7 +574,7 @@ function beastAnswer(j) {
   if (c.order[j] === answerOf(BANK[c.i])) bx.score++;
   else {
     bx.phase = 'over';
-    if (bx.score > (bests[bx.pool] || 0)) { bests[bx.pool] = bx.score; bx.newBest = true; store.set('ctd.beast', bests); }
+    keepBest();
   }
   renderBeast(); renderBeastSide();
   const b = $('#bx-next') || $('#bx-again'); if (b) b.focus({ preventScroll: true });
@@ -571,7 +584,8 @@ function renderBeast() {
   if (bx.phase === 'start') {
     el.innerHTML = `<div class="panel">
         <div class="qhead"><p class="eyebrow">Beast mode</p><h2 class="term">How far can you go?</h2>
-        <p class="ask">Questions keep coming until your first mistake; your score is how many you get right in a row. Harder questions join after ${HARD_FROM}. Choose what to play:</p></div>
+        <p class="ask">Questions keep coming until your first mistake; your score is how many you get right in a row. Harder questions join after ${HARD_FROM}. Choose what to play:</p>
+        ${bx.stopped ? `<p class="fbline">You stopped your ${esc(poolName(bx.stopped.pool))} run at <strong>${bx.stopped.score} in a row</strong>${bx.stopped.best ? ', a new best' : ''}.</p>` : ''}</div>
         <div class="pools" role="group" aria-label="Questions from">${POOLS.map(p => `<button type="button" class="pool a-${p}" data-pool="${p}" aria-pressed="${p === bx.pool}">
             <span class="nm"><i class="adot"></i>${esc(poolName(p))}</span>
             <span class="meta">${poolSize(p)} questions · best ${bests[p] || 0}</span></button>`).join('')}</div>
@@ -604,15 +618,23 @@ $('#beast-box').addEventListener('click', e => {
   if (t && !t.disabled) return beastAnswer(+t.dataset.j);
   const b = e.target.closest('button');
   if (!b) return;
-  if (b.dataset.pool) { bx.pool = b.dataset.pool; store.set('ctd.beast.pool', bx.pool); renderBeast(); }
+  if (b.dataset.pool) beastChoose(b.dataset.pool);
   else if (b.id === 'bx-go' || b.id === 'bx-again') beastStart();
   else if (b.id === 'bx-next') { beastNext(); scrollMain(); }
-  else if (b.id === 'bx-change') { bx.phase = 'start'; renderBeast(); }
+  else if (b.id === 'bx-change') beastChoose(bx.pool);
 });
 function renderBeastSide() {
-  $('#beast-side').innerHTML = `<div class="bests">${POOLS.map(p => `<div><span class="pill a-${p}"><i class="adot"></i>${esc(poolName(p))}</span><b>${bests[p] || 0}</b></div>`).join('')}</div>
-    <p>Your longest run without a mistake in each pool, saved in this browser.</p>`;
+  const best = p => Math.max(bests[p] || 0, p === bx.pool && bx.phase === 'play' ? bx.score : 0);
+  $('#beast-side').innerHTML = `<div class="bests" role="group" aria-label="Play">${POOLS.map(p => `<button type="button" data-pool="${p}" aria-pressed="${p === bx.pool}"><span class="pill a-${p}"><i class="adot"></i>${esc(poolName(p))}</span><b>${best(p)}</b></button>`).join('')}</div>
+    <p>Your longest run without a mistake in each pool, saved in this browser. Pick one to play it; a run you leave ends there.</p>`;
 }
+$('#beast-side').addEventListener('click', e => {
+  const b = e.target.closest('button[data-pool]');
+  if (!b) return;
+  beastChoose(b.dataset.pool);
+  scrollMain();
+  const go = $('#bx-go'); if (go) go.focus({ preventScroll: true });
+});
 
 /* ---------- the apps ---------- */
 function renderApps() {
