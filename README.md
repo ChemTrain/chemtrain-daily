@@ -2,7 +2,7 @@
 
 # ChemTrain Daily
 
-ChemTrain Daily is a daily chemistry quiz and an endless "beast mode", built from the questions of every ChemTrain app. Everything is in one HTML file.
+ChemTrain Daily is a daily chemistry quiz, an endless "beast mode" and made-to-order problem sets, built from the questions of every ChemTrain app. Everything is in one HTML file.
 
 **Play it here:** https://chemtrain.github.io/chemtrain-daily/chemtrain_daily.html
 
@@ -12,6 +12,7 @@ You can also download `chemtrain_daily.html` and open it in any browser.
 
 - **Daily quiz:** ten questions, two from each app. Everyone gets the same ten on the same day, and a new quiz starts at midnight. Your score, your streak of days and the last week are saved in your browser, and you can copy your result to share it.
 - **Beast mode:** choose all apps or one of them, then answer until your first mistake. Your score is how many you get right in a row; harder questions join after ten. Your best run in each pool is saved.
+- **Problem set:** pick any mix of the 22 topics (each app's kinds of question) and how many questions you want, 50, 100, 150 or any number. They are shared equally between your topics, and your progress is saved after every answer. The results show your score by topic, the questions you missed and a set of just those to retry. Share the set's link and everyone who opens it gets the same questions, in the same order with the same choices, so you can compare scores.
 - About 2,300 questions with their structures and explanations:
   - [pKa Learn](https://github.com/ChemTrain/pka-learn): pKa values, the strongest acid of four, the most acidic proton
   - [Reaction Learn](https://github.com/ChemTrain/reaction-learn): the product of a named reaction, the name of a reaction, the missing reagent
@@ -21,7 +22,7 @@ You can also download `chemtrain_daily.html` and open it in any browser.
 
 ## How it is built
 
-`src/build.py` reads the data built into each app's page (the four local apps, and TMC Learn from GitHub), turns it into one bank of multiple-choice questions, and writes `chemtrain_daily.html`. Rebuild it after an app changes. The daily selection is drawn from the date with a fixed seed, so it is the same for everyone with the same version of the page.
+`src/build.py` reads the data built into each app's page (the four local apps, and TMC Learn from GitHub), turns it into one bank of multiple-choice questions, and writes `chemtrain_daily.html`. Rebuild it after an app changes. The daily selection is drawn from the date with a fixed seed, so it is the same for everyone with the same version of the page. A problem-set link lists its questions by their content, not their position, so it keeps working after a rebuild; a question whose text has changed since is left out.
 
 ## How to cite
 
