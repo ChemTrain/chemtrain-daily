@@ -13,7 +13,7 @@ You can also download `chemtrain_daily.html` and open it in any browser.
 - **Daily quiz:** ten questions, two from each app. Everyone gets the same ten on the same day, and a new quiz starts at midnight. Your score, your streak of days and the last week are saved in your browser, and you can copy your result to share it.
 - **Beast mode:** choose all apps or one of them, then answer until your first mistake. Your score is how many you get right in a row; harder questions join after ten. Your best run in each pool is saved.
 - **Problem set:** pick any mix of the 24 topics (each app's kinds of question) and how many questions you want, 50, 100, 150 or any number. They are shared equally between your topics, and your progress is saved after every answer. The results show your score by topic, the questions you missed and a set of just those to retry. Share the set's link and everyone who opens it gets the same questions, in the same order with the same choices, so you can compare scores.
-- About 2,300 questions with their structures and explanations:
+- About 2,400 questions with their structures and explanations:
   - [pKa Learn](https://github.com/ChemTrain/pka-learn): pKa values, the strongest acid of four, the most acidic proton
   - [Reaction Learn](https://github.com/ChemTrain/reaction-learn): the product of a named reaction, the name of a reaction, the missing reagent
   - [PG Learn](https://github.com/ChemTrain/pg-learn): which protecting group the conditions remove, and which conditions remove a group
