@@ -700,7 +700,7 @@ $('#daily-box').addEventListener('click', e => {
   if (!b) return;
   if (b.id === 'dy-start') { dy.started = true; dyShowing = 0; saveDay(); renderDaily(); }
   else if (b.id === 'dy-next') { dyShowing++; renderDaily(); scrollMain(); }
-  else if (b.id === 'dy-results') { dyShowing = dy.quiz.length; reviewMode = false; renderDaily(); }
+  else if (b.id === 'dy-results') { dyShowing = dy.quiz.length; reviewMode = false; renderDaily(); scrollMain(); }
   else if (b.dataset.review !== undefined) { dyShowing = +b.dataset.review; reviewMode = true; renderDaily(); scrollMain(); }
   else if (b.id === 'dy-share') copyText(shareText(), $('#share-text'), $('#share-msg'));
   else if (b.dataset.goto) show(b.dataset.goto);
