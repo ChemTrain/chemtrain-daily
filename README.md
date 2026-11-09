@@ -31,7 +31,7 @@ You can also download `chemtrain_daily.html` and open it in any browser.
 
 If you use ChemTrain Daily in a course, please cite it and the apps its questions come from:
 
-> Bindschaedler, Q. *ChemTrain Daily* (2026). ChemTrain. https://github.com/ChemTrain/chemtrain-daily
+> Bindschaedler, Q. P. *ChemTrain Daily* (2026). ChemTrain. https://github.com/ChemTrain/chemtrain-daily
 
 ## License
 

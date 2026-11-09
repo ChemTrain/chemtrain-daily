@@ -4,7 +4,7 @@ title: "ChemTrain Daily"
 type: software
 authors:
   - family-names: Bindschaedler
-    given-names: Quentin
+    given-names: Quentin P.
     affiliation: ChemTrain
 abstract: "A daily chemistry quiz and an endless beast mode built from the questions of the ChemTrain apps, in one HTML file."
 url: "https://chemtrain.github.io/chemtrain-daily/chemtrain_daily.html"
