@@ -132,8 +132,8 @@ h1 span { font-weight: 500; color: var(--muted); }
 .blank { display: inline-block; min-width: 1.6em; padding: 0 6px; border-radius: 6px; background: var(--form); color: var(--surface); font-weight: 700; }
 .qbox { display: grid; place-items: center; width: 92px; height: 92px; border: 2px dashed var(--line); border-radius: 12px; font: 700 34px var(--f-display); color: var(--muted); }
 /* a drawn reactant that a later step adds, labelled as the conditions name it ("2. PhCHO") */
-.rlab { display: inline-grid; justify-items: center; gap: 2px; }
-.rlab b { font: 600 13px var(--f-body); color: var(--ink); padding: 0 6px; border-radius: 6px; background: var(--surface); border: 1px solid var(--line); }
+.rlab { display: inline-grid; justify-items: center; gap: 10px; }
+.rlab b { position: relative; font: 600 13px var(--f-body); color: var(--ink); padding: 0 6px; border-radius: 6px; background: var(--surface); border: 1px solid var(--line); }
 .xtp { font: 500 12px var(--f-body); color: var(--muted); }
 .ask .solv { color: var(--ink); font-weight: 700; }
 .pair { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 12px; align-items: stretch; }
@@ -193,11 +193,15 @@ h1 span { font-weight: 500; color: var(--muted); }
   --hex: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linejoin='round'%3E%3Cpath d='M12 1.8l8.8 5.1v10.2L12 22.2l-8.8-5.1V6.9z'/%3E%3Ccircle cx='12' cy='12' r='3.6'/%3E%3C/svg%3E"); }
 .rg:hover, .rg[aria-expanded="true"] { background: var(--accent-soft); text-decoration-style: solid; }
 .rg:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.rg .ring { position: absolute; left: -3px; top: -3px; width: calc(100% + 6px); height: calc(100% + 6px); overflow: visible; pointer-events: none; opacity: 0; filter: drop-shadow(0 0 3px var(--accent)); }
-.rg .ring rect { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linecap: round; stroke-dasharray: 28 72; }
+/* a drawn reactant's label and the same name in the conditions: a green stroke runs around both once */
+.labref { position: relative; border-radius: 5px; }
+svg.ring.lab { filter: drop-shadow(0 0 3px var(--good)); }
+svg.ring.lab rect { stroke: var(--good); }
+.rg .ring, .ring.lab { position: absolute; left: -3px; top: -3px; width: calc(100% + 6px); height: calc(100% + 6px); overflow: visible; pointer-events: none; opacity: 0; filter: drop-shadow(0 0 3px var(--accent)); }
+.rg .ring rect, .ring.lab rect { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linecap: round; stroke-dasharray: 28 72; }
 @media (prefers-reduced-motion: no-preference) {
-  .struct.fresh .rg .ring { animation: pg-fade 2.6s ease-out forwards; }
-  .struct.fresh .rg .ring rect { animation: pg-run 2.6s cubic-bezier(.45, .05, .55, .95) forwards; }
+  .struct.fresh .rg .ring, .struct.fresh .ring.lab { animation: pg-fade 2.6s ease-out forwards; }
+  .struct.fresh .rg .ring rect, .struct.fresh .ring.lab rect { animation: pg-run 2.6s cubic-bezier(.45, .05, .55, .95) forwards; }
 }
 .pgpop { position: absolute; z-index: 40; display: grid; gap: 10px; justify-items: center; width: max-content; max-width: min(380px, calc(100vw - 32px)); padding: 12px 14px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 12px 32px rgba(8, 20, 28, .2); }
 .pgpop .pgh { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; width: 100%; font-weight: 600; font-size: 14.5px; }
@@ -557,7 +561,21 @@ function siteSVG(q, order, chosen, maxScale, maxH, maxW) {
 // a number never parts from its unit at a line break ("200 °C", "5 mol%")
 const unitSpace = s => s.replace(/(\d) (?=°C|°|K\b|mol%|equiv|atm|bar\b|h\b|min\b|nm\b|M\b|%)/g, '$1\u00a0');
 const condHTML = (steps, key = [], links = [], opts = {}) => steps.map((s, i) => `<span>${steps.length > 1 ? (i + 1) + '. ' : ''}${
-  linkReagents(key.reduce((t, k) => t.split(esc(unitSpace(k))).join(`<b class="key">${esc(unitSpace(k))}</b>`), esc(unitSpace(s))).replace(/\?/g, '<b class="blank">?</b>'), links[i], opts)}</span>`).join('');
+  markLab(linkReagents(key.reduce((t, k) => t.split(esc(unitSpace(k))).join(`<b class="key">${esc(unitSpace(k))}</b>`), esc(unitSpace(s))).replace(/\?/g, '<b class="blank">?</b>'), links[i], opts), opts)}</span>`).join('');
+// opts.lab: the names under drawn reactants (BnBr, R¹CHO); where a step names one, it gets the green ring too
+const LAB_RING = '<svg class="ring lab" aria-hidden="true"><rect width="100%" height="100%" rx="6" pathLength="100"/></svg>';
+function markLab(html, { lab = [], ring = false } = {}) {
+  for (const t of lab) {
+    const e = esc(unitSpace(t));
+    for (let at = html.indexOf(e); at >= 0; at = html.indexOf(e, at + 1)) {
+      const before = html.slice(0, at);
+      if (before.lastIndexOf('<') > before.lastIndexOf('>')) continue;  // inside a tag
+      html = before + `<span class="labref">${e}${ring ? LAB_RING : ''}</span>` + html.slice(at + e.length);
+      break;
+    }
+  }
+  return html;
+}
 // links: [reagent as written, full name, drawing], the longest first so "SO₃·pyridine" is linked before "pyridine".
 // short: show the reagent only as written (a Named reaction question not yet answered: "Burgess reagent" would tell).
 // ring: the stroke that runs around it once (while the question is unanswered)
@@ -585,14 +603,14 @@ function figureHTML(q, order, chosen) {
   if (f.r) {
     const left = f.r.map((m, k) => {
       const svg = molSVG(m, 1.6, 170, 360, false, k === 0 && f.rm != null ? ' data-fig="pg"' : '');
-      return f.lab && f.lab[k] ? `<span class="rlab">${svg}<b>${esc(f.lab[k])}</b></span>` : svg;
+      return f.lab && f.lab[k] ? `<span class="rlab">${svg}<b>${esc(f.lab[k])}${done ? '' : LAB_RING}</b></span>` : svg;
     }).join('<span class="plus" aria-hidden="true">+</span>');
     let right;
     if (f.p != null) right = molSVG(f.p, 1.6, 170, 360);
     else if (done && f.after != null) right = molSVG(f.after, 1.6, 170, 360);
     else if (done && f.veil) right = molSVG(q.o[answerOf(q)].m, 1.6, 170, 360);
     else right = '<span class="qbox" aria-label="Product hidden">?</span>';
-    return `<figure class="struct${f.veil && !done ? ' veiled' : ''}${done ? '' : ' fresh'}" role="img" aria-label="Reaction scheme">${left}<span class="arrow">${condHTML(f.cond || [], f.key, f.rg, { short: q.k === 'Named reaction' && !done, ring: !done })}<i></i></span>${right}</figure>`;
+    return `<figure class="struct${f.veil && !done ? ' veiled' : ''}${done ? '' : ' fresh'}" role="img" aria-label="Reaction scheme">${left}<span class="arrow">${condHTML(f.cond || [], f.key, f.rg, { short: q.k === 'Named reaction' && !done, ring: !done, lab: (f.lab || []).filter(Boolean) })}<i></i></span>${right}</figure>`;
   }
   return '';
 }
