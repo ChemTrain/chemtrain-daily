@@ -9,6 +9,9 @@ The questions, explanations and structure drawings are adapted from these ChemTr
 - PG Learn by Quentin Bindschaedler, https://github.com/ChemTrain/pg-learn
 - TMC Learn by Francesco Sala, https://github.com/ChemTrain/tmc-learn
 - Reactivity Learn by Quentin Bindschaedler, https://github.com/ChemTrain/reactivity-learn
+- Radical Learn by Quentin Bindschaedler, https://github.com/ChemTrain/radical-learn
+- Photoredox Learn by Quentin Bindschaedler, https://github.com/ChemTrain/photoredox-learn
+- Amino Acid Learn by Quentin Bindschaedler, https://github.com/ChemTrain/amino-acid-learn
 
 They were changed into multiple-choice questions with new wrong answers. When you reuse them, credit ChemTrain Daily and the app the question comes from, for example:
 
